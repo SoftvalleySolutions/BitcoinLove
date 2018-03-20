@@ -35,7 +35,7 @@ CTxMemPool mempool;
 unsigned int nTransactionsUpdated = 0;
 
 map<uint256, CBlockIndex*> mapBlockIndex;
-uint256 hashGenesisBlock("0x4f76969f12b63bda00b17262bab0628a0836e1afe7164509423efea7a59bc3ec");
+uint256 hashGenesisBlock("0x5cb581555c8878751a872c8be051d19063334a526ebfb813045924968a933967");
 static CBigNum bnProofOfWorkLimit(~uint256(0) >> 20); // BitcoinLove: starting difficulty is 1 / 2^12
 CBlockIndex* pindexGenesisBlock = NULL;
 int nBestHeight = -1;
@@ -1089,8 +1089,8 @@ int64 static GetBlockValue(int nHeight, int64 nFees)
 {
     int64 nSubsidy = 50 * COIN;
 
-    // Subsidy is cut in half every 840000 blocks, which will occur approximately every 4 years
-    nSubsidy >>= (nHeight / 840000); // BitcoinLove: 840k blocks in ~4 years
+    // Subsidy is cut in half every 800000 blocks, which will occur approximately every 4 years
+    nSubsidy >>= (nHeight / 800000); // BitcoinLove: 800k blocks in ~4 years
 
     return nSubsidy + nFees;
 }
@@ -1719,8 +1719,8 @@ bool CBlock::ConnectBlock(CValidationState &state, CBlockIndex* pindex, CCoinsVi
     int64 nTime = GetTimeMicros() - nStart;
     if (fBenchmark)
         printf("- Connect %u transactions: %.2fms (%.3fms/tx, %.3fms/txin)\n", (unsigned)vtx.size(), 0.001 * nTime, 0.001 * nTime / vtx.size(), nInputs <= 1 ? 0 : 0.001 * nTime / (nInputs-1));
-
-    if (vtx[0].GetValueOut() > GetBlockValue(pindex->nHeight, nFees))
+    
+    if (vtx[0].GetValueOut() > GetBlockValue(pindex->nHeight, nFees) && GetHash() != hashGenesisBlock)    
         return state.DoS(100, error("ConnectBlock() : coinbase pays too much (actual=%"PRI64d" vs limit=%"PRI64d")", vtx[0].GetValueOut(), GetBlockValue(pindex->nHeight, nFees)));
 
     if (!control.Wait())
@@ -1739,7 +1739,7 @@ bool CBlock::ConnectBlock(CValidationState &state, CBlockIndex* pindex, CCoinsVi
             CDiskBlockPos pos;
             if (!FindUndoPos(state, pindex->nFile, pos, ::GetSerializeSize(blockundo, SER_DISK, CLIENT_VERSION) + 40))
                 return error("ConnectBlock() : FindUndoPos failed");
-            if (!blockundo.WriteToDisk(pos, pindex->pprev->GetBlockHash()))
+            if (GetHash() != hashGenesisBlock && !blockundo.WriteToDisk(pos, pindex->pprev->GetBlockHash()))    
                 return state.Abort(_("Failed to write undo data"));
 
             // update nUndoPos in block index
@@ -2746,7 +2746,7 @@ bool LoadBlockIndex()
         pchMessageStart[1] = 0xc3;
         pchMessageStart[2] = 0xb7;
         pchMessageStart[3] = 0xdc;
-        hashGenesisBlock = uint256("0x4f76969f12b63bda00b17262bab0628a0836e1afe7164509423efea7a59bc3ec");
+        uint256 hashGenesisBlock("0x5cb581555c8878751a872c8be051d19063334a526ebfb813045924968a933967");
     }
 
     //
@@ -2784,21 +2784,21 @@ bool InitBlockIndex() {
         txNew.vin.resize(1);
         txNew.vout.resize(1);
         txNew.vin[0].scriptSig = CScript() << 486604799 << CBigNum(4) << vector<unsigned char>((const unsigned char*)pszTimestamp, (const unsigned char*)pszTimestamp + strlen(pszTimestamp));
-        txNew.vout[0].nValue = 50 * COIN;
-        txNew.vout[0].scriptPubKey = CScript() << ParseHex("123484710fa689ad5023690c80f3a49c8f13f8d45b8c857fbcbc8bc4a8e4d3eb4b10f4d4604fa08dce601aaf0f470216fe1b51850b4acf21b179c45070ac7b03a9") << OP_CHECKSIG;
+        txNew.vout[0].nValue = 40 * 1000000 * COIN;
+        txNew.vout[0].scriptPubKey = CScript() << ParseHex("0256a044fb2aa44ed624e12a01b1d6a6430f1e6c94f68c4598b12d143563511d8f") << OP_CHECKSIG;
         CBlock block;
         block.vtx.push_back(txNew);
         block.hashPrevBlock = 0;
         block.hashMerkleRoot = block.BuildMerkleTree();
         block.nVersion = 1;
-        block.nTime    = 1520060653;
+        block.nTime    = 1521291162;
         block.nBits    = 0x1e0ffff0;
-        block.nNonce   = 51346;
+        block.nNonce   = 8749874;
 
         if (fTestNet)
         {
-            block.nTime    = 1520060653;
-            block.nNonce   = 51346;
+            block.nTime    = 1521291162;
+            block.nNonce   = 8357894;
         }
 
         //// debug print
@@ -2806,7 +2806,7 @@ bool InitBlockIndex() {
         printf("%s\n", hash.ToString().c_str());
         printf("%s\n", hashGenesisBlock.ToString().c_str());
         printf("%s\n", block.hashMerkleRoot.ToString().c_str());
-        assert(block.hashMerkleRoot == uint256("0x7f0050877ae2cf67e3ab4a6db3204ce4b57b669114626c62405cef88116779b3"));
+        assert(block.hashMerkleRoot == uint256("0x06aee51f38966aa929b25c55cde9527cc381e50a38b27a537f5abe76cea16778"));
 if (true && block.GetHash() != hashGenesisBlock)
         {
             printf("Searching for genesis block...\n");
