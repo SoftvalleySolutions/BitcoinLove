@@ -12,8 +12,9 @@ What is BitcoinLove?
 BitcoinLove is a lite version of Bitcoin using scrypt as a proof-of-work algorithm.
  - 60 seconds block targets
  - subsidy halves in 840k blocks (~4 years)
- - ~84 million total coins
-
+ - ~80 million total coins
+ - 50% Premined
+ 
 The rest is the same as Bitcoin.
  - 50 coins per block
  - 2016 blocks to retarget difficulty
