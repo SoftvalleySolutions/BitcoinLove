@@ -1632,7 +1632,7 @@ bool CBlock::ConnectBlock(CValidationState &state, CBlockIndex* pindex, CCoinsVi
     if (GetHash() == hashGenesisBlock) {
         view.SetBestBlock(pindex);
         pindexGenesisBlock = pindex;
-        return true;
+        // return true;
     }
 
     bool fScriptChecks = pindex->nHeight >= Checkpoints::GetTotalBlocksEstimate();
@@ -2746,7 +2746,7 @@ bool LoadBlockIndex()
         pchMessageStart[1] = 0xc3;
         pchMessageStart[2] = 0xb7;
         pchMessageStart[3] = 0xdc;
-        uint256 hashGenesisBlock("0x5cb581555c8878751a872c8be051d19063334a526ebfb813045924968a933967");
+        hashGenesisBlock = uint256("0x5cb581555c8878751a872c8be051d19063334a526ebfb813045924968a933967");
     }
 
     //
